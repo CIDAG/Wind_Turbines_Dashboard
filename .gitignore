@@ -1,0 +1,34 @@
+__pycache__/
+*.py[cod]
+
+.venv/
+.ipynb_checkpoints/
+
+*.log
+wind_dashboard_streamlit.*.log
+
+.vscode/
+Microsoft/
+tmp/
+
+# Dataset inputs are distributed through the Zenodo package (see README).
+datasets2020-penmanshiel/
+DTU_Reference_v1_10MW_178.csv
+IEA_Reference_3.4MW_130.csv
+IEA_Reference_10MW_198.csv
+IEA_Reference_15MW_240.csv
+LEANWIND_Reference_8MW_164.csv
+Location1.csv
+Location2.csv
+Location3.csv
+Location4.csv
+NREL_Reference_5MW_126 (1).csv
+Onsite_MetMast_SCADA_tratado.csv
+Onsite-MetMast-SCADA-data-2017 (3).csv
+opendata-wind-failures-2017 (3).csv
+Wind%20Turbines%20Logs%202017 (3).csv
+Wind_Turbine_SCADA_tratado_consolidado.csv
+Wind-Turbine-SCADA-signals-2017_0.csv
+
+# Cópia-fonte local; não enviar ao GitHub
+WT-project/

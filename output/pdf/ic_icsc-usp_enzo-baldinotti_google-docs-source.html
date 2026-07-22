@@ -1,0 +1,65 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Progress Report - Undergraduate Research / IC</title>
+<style>
+@font-face {
+  font-family: ArialLocal;
+  src: url(arial.ttf);
+}
+@font-face {
+  font-family: ArialLocal;
+  font-weight: 700;
+  src: url(arialbd.ttf);
+}
+body {
+  font-family: ArialLocal, Arial, sans-serif;
+  font-size: 11pt;
+  line-height: 1.15;
+  color: #222222;
+}
+h1 {
+  font-size: 11pt;
+  line-height: 1.15;
+  margin: 0 0 6pt 0;
+  font-weight: 700;
+}
+p {
+  margin: 0 0 6.1pt 0;
+  text-align: justify;
+}
+table.header {
+  width: 100%;
+  margin: 0 0 8pt 0;
+  border-collapse: collapse;
+}
+table.header td {
+  padding: 1.4pt 0;
+}
+.placeholder {
+  color: #666666;
+}
+</style>
+</head>
+<body>
+
+<h1>Progress Report - Undergraduate Research / IC</h1>
+
+<table class="header">
+  <tr><td><b>Project Title:</b> Analysis and visualization of wind turbine SCADA data for operational characterization</td></tr>
+  <tr><td><b>Researcher:</b> Enzo Baldinotti</td></tr>
+  <tr><td><b>Supervisor:</b> <span class="placeholder">[preencher]</span></td></tr>
+  <tr><td><b>Principal Investigator:</b> <span class="placeholder">[preencher]</span></td></tr>
+</table>
+
+<p><b>1. Acronyms and 2. Project Summary.</b> IC: Undergraduate Research; SCADA: Supervisory Control and Data Acquisition; NREL: National Renewable Energy Laboratory; IEA: International Energy Agency; DTU: Technical University of Denmark; AEP: Annual Energy Production; DBSCAN: Density-Based Spatial Clustering of Applications with Noise. The project organizes and analyzes open wind turbine datasets to compare power curves, data quality, and operational behavior. In this stage, the main goal was to consolidate a reproducible data-processing workflow, standardize variables such as wind speed, power, entity, timestamp, and normalized power, and structure a dashboard for exploration and comparison between operational sources and reference curves.</p>
+
+<p><b>3. Description of Main Activities.</b> SCADA and meteorological datasets were organized, including 2017 EDP data from turbines T01, T06, T07, and T11, onsite met mast data, Kaggle site-based datasets, Penmanshiel/Greenbyte data, and reference curves from NREL, IEA, DTU, and LEANWIND. In the analysis notebooks, turbines were processed separately to avoid contamination between equipment with different profiles or failures, including missing-value cleaning, outlier checks, and consolidation of treated files. A canonical data contract was also defined to support comparisons between datasets with different structures and units. In the Streamlit dashboard, global filters, quality profiles, variable coverage matrices, dataset compatibility comparisons, power-curve plots, temporal analyses, correlations, and balanced sampling for large datasets were implemented. This stage also included documentation of visualization standards, QA criteria, and rules for the modular evolution of loaders, metrics, and charts.</p>
+
+<p><b>4. Challenges Encountered.</b> The main challenge was handling dataset heterogeneity: different column names, different power scales, presence or absence of timestamps, sensor failures, varying temporal resolutions, and large files. Another critical point was preventing value imputation or outlier detection from mixing different turbines, since that could hide real operational behavior. It was also necessary to check the physical plausibility of the power curves and derived metrics, especially when comparing operational data with reference curves.</p>
+
+<p><b>5. Next Steps.</b> The next stage is to finish modularizing the code by moving loading logic, metrics, and charts into reusable and testable components. It will also be important to expand the validation of quality metrics, refine operational anomaly detection, review AEP calculations with Weibull scenarios, integrate new years or datasets when available, and prepare a more stable dashboard version for discussing results. By the end of the cycle, the goal is to consolidate a clear methodological basis for comparing performance, quality, and operational patterns of wind turbines across different data sources.</p>
+
+</body>
+</html>
