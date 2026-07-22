@@ -24,11 +24,11 @@ git clone https://github.com/CIDAG/Wind_Turbines_Dashboard.git
 
 ### 2. Dados: pacote Zenodo
 
-O repositório distribui código, notebooks, documentação e os outputs derivados em `output/`. Os datasets de entrada (Penmanshiel, EDP, Kaggle e curvas de referência) são fornecidos separadamente pelo pacote `ZENODO.zip`, evitando que o clone do GitHub baixe vários gigabytes de dados.
+O repositório distribui código, notebooks, documentação e os outputs derivados em `output/`. Os datasets de entrada (Penmanshiel, EDP, Kaggle e curvas de referência) são fornecidos separadamente pelo Zenodo, evitando que o clone do GitHub baixe vários gigabytes de dados.
 
-> **DOI/link do Zenodo:** adicione o link público do registro aqui quando a publicação estiver concluída.
+> **DOI/link do Zenodo:** https://doi.org/10.5281/zenodo.21483443
 
-Após clonar o repositório, baixe `ZENODO.zip` e extraia **o conteúdo** do ZIP na raiz do projeto, preservando os nomes e a estrutura:
+Após clonar o repositório, extraia **a pasta** datasets2020-penmanshiel do datasets2020-penmanshiel.zip e os demais arquivos que estão fora do .zip, também insira na raiz do projeto, preservando os nomes e a estrutura:
 
 O resultado esperado é:
 
