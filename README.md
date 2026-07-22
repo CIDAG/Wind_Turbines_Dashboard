@@ -19,7 +19,7 @@ Os CSVs precisam ficar no mesmo layout esperado pelo projeto. O dashboard detect
 Se estiver usando Git:
 
 ```powershell
-git clone https://github.com/EnzoBaldinotti/WT-project.git
+git clone https://github.com/CIDAG/Wind_Turbines_Dashboard.git
 ```
 
 ### 2. Dados: pacote Zenodo
