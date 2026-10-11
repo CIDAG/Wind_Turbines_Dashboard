@@ -11,24 +11,30 @@ wind_dashboard_streamlit.*.log
 Microsoft/
 tmp/
 
-# Dataset inputs are distributed through the Zenodo package (see README).
-datasets2020-penmanshiel/
-DTU_Reference_v1_10MW_178.csv
-IEA_Reference_3.4MW_130.csv
-IEA_Reference_10MW_198.csv
-IEA_Reference_15MW_240.csv
-LEANWIND_Reference_8MW_164.csv
-Location1.csv
-Location2.csv
-Location3.csv
-Location4.csv
-NREL_Reference_5MW_126 (1).csv
-Onsite_MetMast_SCADA_tratado.csv
-Onsite-MetMast-SCADA-data-2017 (3).csv
-opendata-wind-failures-2017 (3).csv
-Wind%20Turbines%20Logs%202017 (3).csv
-Wind_Turbine_SCADA_tratado_consolidado.csv
-Wind-Turbine-SCADA-signals-2017_0.csv
+# Dataset inputs are distributed through Zenodo (see README).
+# Keep the CSVs already tracked in data/ under version control.
+/data/datasets*-penmanshiel.zip
+/data/datasets*-penmanshiel/
+/data/Turbine_Data_Penmanshiel_*.csv
+/data/Status_Penmanshiel_*.csv
+/data/turbinas_tratadas/
+/data/T[0-9][0-9]_tratado.csv
+/data/DTU_Reference_v1_10MW_178.csv
+/data/IEA_Reference_3.4MW_130.csv
+/data/IEA_Reference_10MW_198.csv
+/data/IEA_Reference_15MW_240.csv
+/data/LEANWIND_Reference_8MW_164.csv
+/data/Location1.csv
+/data/Location2.csv
+/data/Location3.csv
+/data/Location4.csv
+/data/NREL_Reference_5MW_126 (1).csv
+/data/Onsite_MetMast_SCADA_tratado.csv
+/data/Onsite-MetMast-SCADA-data-2017 (3).csv
+/data/opendata-wind-failures-2017 (3).csv
+/data/Wind%20Turbines%20Logs%202017 (3).csv
+/data/Wind_Turbine_SCADA_tratado_consolidado.csv
+/data/Wind-Turbine-SCADA-signals-2017_0.csv
 
-# CÛpia-fonte local; n„o enviar ao GitHub
-WT-project/
+# C√≥pia local de outra vers√£o do projeto.
+/WT-project/

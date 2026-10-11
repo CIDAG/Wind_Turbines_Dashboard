@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable, Mapping
 from itertools import combinations
 
 import numpy as np
@@ -17,7 +18,8 @@ def infer_resolution_minutes(df: pd.DataFrame) -> float:
     if "timestamp" not in df.columns:
         return np.nan
 
-    timestamped = df.dropna(subset=["timestamp"]).copy()
+    columns = [col for col in ["entity", "timestamp"] if col in df.columns]
+    timestamped = df.loc[:, columns].dropna(subset=["timestamp"])
     if timestamped.empty:
         return np.nan
 
@@ -45,6 +47,63 @@ def infer_resolution_minutes(df: pd.DataFrame) -> float:
     return round(float(np.median(resolutions)), 2)
 
 
+def count_duplicate_rows(
+    df: pd.DataFrame, columns: list[str], block_rows: int = 50_000
+) -> int:
+    """Count exact duplicates while bounding multi-column factorization memory.
+
+    Equal rows have equal factorization codes in every column. Partitioning on
+    one column therefore keeps duplicates together, including missing values.
+    Skewed partitions are split again; a constant partition needs no row copy.
+    """
+    if block_rows < 1:
+        raise ValueError("block_rows must be positive")
+    if not len(df) or not columns:
+        return 0
+    if len(columns) == 1:
+        return int(df[columns[0]].duplicated().sum())
+
+    column_positions = df.columns.get_indexer(columns)
+    pending = [(np.arange(len(df), dtype=np.intp), columns)]
+    duplicates = 0
+    while pending:
+        positions, candidates = pending.pop()
+        size = len(positions)
+        if size <= block_rows:
+            block = df.iloc[positions, column_positions]
+            duplicates += int(block.duplicated().sum())
+            del block
+            continue
+
+        remaining = list(candidates)
+        for column in candidates:
+            codes, unique_values = pd.factorize(df[column].iloc[positions], sort=False)
+            unique_count = len(unique_values) + int((codes == -1).any())
+            del unique_values
+            if unique_count <= 1:
+                remaining.remove(column)
+                del codes
+                continue
+            if unique_count == size:
+                # A unique value in this column makes every row unique.
+                del codes
+                break
+
+            bucket_count = max(2, (size + block_rows - 1) // block_rows)
+            buckets = codes % bucket_count
+            del codes
+            for bucket in range(bucket_count):
+                subset = positions[buckets == bucket]
+                if len(subset) > 1:
+                    pending.append((subset, remaining))
+            del buckets
+            break
+        else:
+            # All remaining columns are constant in this partition.
+            duplicates += size - 1
+    return duplicates
+
+
 def dataset_profile(df: pd.DataFrame, spec: DatasetSpec) -> dict:
     n_rows = int(len(df))
     canonical_present = [col for col in CANONICAL_FEATURES if col in df.columns]
@@ -54,8 +113,8 @@ def dataset_profile(df: pd.DataFrame, spec: DatasetSpec) -> dict:
     }
 
     if n_rows and canonical_present:
-        missing_pct = round(float(df[canonical_present].isna().mean().mean() * 100), 2)
-        duplicated_pct = round(float(df[canonical_present].duplicated().mean() * 100), 2)
+        missing_pct = round(float(np.mean([df[col].isna().mean() for col in canonical_present]) * 100), 2)
+        duplicated_pct = round(100.0 * count_duplicate_rows(df, canonical_present) / n_rows, 2)
     else:
         missing_pct = np.nan
         duplicated_pct = np.nan
@@ -95,11 +154,15 @@ def dataset_profile(df: pd.DataFrame, spec: DatasetSpec) -> dict:
     }
 
 
-def build_profiles(datasets: dict[str, pd.DataFrame], specs: dict[str, DatasetSpec]) -> tuple[dict[str, dict], pd.DataFrame]:
-    profiles = {
-        key: dataset_profile(df, specs[key])
-        for key, df in datasets.items()
-    }
+def build_profiles(
+    datasets: Mapping[str, pd.DataFrame] | Iterable[tuple[str, pd.DataFrame]],
+    specs: dict[str, DatasetSpec],
+) -> tuple[dict[str, dict], pd.DataFrame]:
+    frames = datasets.items() if isinstance(datasets, Mapping) else datasets
+    profiles = {}
+    for key, df in frames:
+        profiles[key] = dataset_profile(df, specs[key])
+        del df  # Release each filtered frame before requesting the next one.
     table_rows = []
     for profile in profiles.values():
         row = {

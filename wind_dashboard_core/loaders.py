@@ -169,11 +169,11 @@ DATASET_SPECS: dict[str, DatasetSpec] = {
         description="SCADA Greenbyte por turbina com status operacional e metadados.",
         loader_name="load_penmanshiel",
         power_unit="kW",
-        primary_files=("datasets*-penmanshiel",),
+        primary_files=("Turbine_Data_Penmanshiel_*.csv",),
         entity_label="Turbina",
         expected_resolution_minutes=10.0,
         notes=(
-            "Descobre automaticamente pastas datasets*-penmanshiel para permitir novos anos.",
+            "Descobre automaticamente arquivos Penmanshiel em data/ para permitir novos anos.",
             "Status Greenbyte e anexado pelo ultimo evento conhecido antes de cada timestamp.",
         ),
     ),
@@ -187,9 +187,10 @@ def _primary_file_exists(root: Path, file_name: str) -> bool:
 
 
 def available_dataset_keys(root: Path) -> list[str]:
+    data_root = root / "data"
     keys = []
     for key, spec in DATASET_SPECS.items():
-        if any(_primary_file_exists(root, file_name) for file_name in spec.primary_files):
+        if any(_primary_file_exists(data_root, file_name) for file_name in spec.primary_files):
             keys.append(key)
     return keys
 
@@ -320,7 +321,8 @@ def load_edp(root: Path) -> pd.DataFrame:
         "outlier_flag": "outlier_flag",
     }
 
-    consolidated = root / "Wind_Turbine_SCADA_tratado_consolidado.csv"
+    data_root = root / "data"
+    consolidated = data_root / "Wind_Turbine_SCADA_tratado_consolidado.csv"
     if consolidated.exists():
         raw_cols = _read_csv_columns(consolidated)
         wanted = set(rename_map.keys())
@@ -337,7 +339,7 @@ def load_edp(root: Path) -> pd.DataFrame:
         ("Turbina_T11_data.csv", "T11"),
     ]
     for file_name, turbine_id in turbine_files:
-        path = root / file_name
+        path = data_root / file_name
         if not path.exists():
             continue
         df = pd.read_csv(path, sep=";", low_memory=False)
@@ -354,6 +356,7 @@ def load_edp(root: Path) -> pd.DataFrame:
 
 
 def load_kaggle(root: Path) -> pd.DataFrame:
+    data_root = root / "data"
     rename_map = {
         "Time": "timestamp",
         "Location": "entity",
@@ -365,7 +368,7 @@ def load_kaggle(root: Path) -> pd.DataFrame:
     frames = []
     for idx in range(1, 5):
         location = f"Location{idx}"
-        path = root / f"{location}.csv"
+        path = data_root / f"{location}.csv"
         if not path.exists():
             continue
         df = pd.read_csv(path, low_memory=False)
@@ -381,6 +384,7 @@ def load_kaggle(root: Path) -> pd.DataFrame:
 
 
 def load_nrel(root: Path) -> pd.DataFrame:
+    data_root = root / "data"
     turbines = [
         ("NREL 5MW", "NREL_Reference_5MW_126 (1).csv", 5000, 126),
         ("DTU 10MW", "DTU_Reference_v1_10MW_178.csv", 10000, 178),
@@ -399,7 +403,7 @@ def load_nrel(root: Path) -> pd.DataFrame:
 
     frames = []
     for entity, file_name, rated_power_kw, rotor_diameter_m in turbines:
-        path = root / file_name
+        path = data_root / file_name
         if not path.exists():
             continue
         df = pd.read_csv(path, low_memory=False)
@@ -501,10 +505,6 @@ def _infer_rotor_diameter_m(model: object) -> float | None:
     return float(match.group(1)) if match else None
 
 
-def _discover_penmanshiel_dirs(root: Path) -> list[Path]:
-    return sorted(path for path in root.glob("datasets*-penmanshiel") if path.is_dir())
-
-
 def _read_penmanshiel_status(path: Path) -> pd.DataFrame:
     status_cols = [
         "Timestamp start",
@@ -562,7 +562,8 @@ def _attach_penmanshiel_status(df: pd.DataFrame, status_path: Path | None) -> pd
 
 def load_penmanshiel(root: Path) -> pd.DataFrame:
     frames = []
-    for folder in _discover_penmanshiel_dirs(root):
+    folder = root / "data"
+    if folder.is_dir():
         for data_path in sorted(folder.glob("Turbine_Data_Penmanshiel_*.csv")):
             columns, skiprows = _read_penmanshiel_header(data_path)
             usecols = [col for col in PENMANSHIEL_RENAME_MAP if col in columns]
@@ -625,7 +626,7 @@ def load_penmanshiel(root: Path) -> pd.DataFrame:
             frames.append(df)
 
     if not frames:
-        raise FileNotFoundError("Nenhum arquivo Penmanshiel encontrado em datasets*-penmanshiel.")
+        raise FileNotFoundError("Nenhum arquivo Turbine_Data_Penmanshiel_*.csv encontrado em data/.")
 
     return pd.concat(frames, ignore_index=True, sort=False)
 

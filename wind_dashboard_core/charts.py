@@ -17,15 +17,27 @@ DATASET_COLORS = {
     "Penmanshiel SCADA 2020+": "#9467bd",
 }
 
+# Plotly uses CSS pixels; 11.5 pt in the report is about 15.3 px at 96 dpi.
+REPORT_FONT_PX = 15.3
+
 
 def style_figure(fig: go.Figure, title: str, height: int | None = None) -> go.Figure:
     fig.update_layout(
-        title=title,
+        title={"text": title, "font": {"size": 18}},
         template="plotly_white",
-        font={"family": "Arial", "size": 12},
-        legend={"orientation": "h", "yanchor": "bottom", "y": 1.02, "x": 0},
-        margin={"l": 20, "r": 20, "t": 70, "b": 25},
+        font={"family": "Arial", "size": REPORT_FONT_PX},
+        legend={
+            "title": {"text": ""},
+            "font": {"size": REPORT_FONT_PX},
+            "orientation": "h",
+            "yanchor": "bottom",
+            "y": 1.02,
+            "x": 0,
+        },
+        margin={"l": 75, "r": 40, "t": 115, "b": 75},
     )
+    fig.update_xaxes(tickfont={"size": REPORT_FONT_PX}, title_font={"size": REPORT_FONT_PX}, automargin=True)
+    fig.update_yaxes(tickfont={"size": REPORT_FONT_PX}, title_font={"size": REPORT_FONT_PX}, automargin=True)
     if height is not None:
         fig.update_layout(height=height)
     return fig
@@ -57,8 +69,12 @@ def feature_coverage_heatmap(matrix: pd.DataFrame) -> go.Figure:
         labels={"x": "Dataset", "y": "Feature canonica", "color": "Disponivel"},
         aspect="auto",
     )
-    fig.update_xaxes(side="top")
-    return style_figure(fig, "Cobertura de features por dataset", height=480)
+    fig.update_xaxes(side="top", tickangle=-35, title_text="")
+    fig.update_traces(textfont={"size": 13})
+    fig = style_figure(fig, "Cobertura de features por dataset", height=620)
+    fig.update_layout(margin={"l": 175, "r": 50, "t": 220, "b": 65})
+    fig.update_coloraxes(colorbar={"tickfont": {"size": REPORT_FONT_PX}, "title": {"font": {"size": REPORT_FONT_PX}}})
+    return fig
 
 
 def pairwise_severity_heatmap(pairwise: pd.DataFrame) -> go.Figure:
@@ -76,8 +92,12 @@ def pairwise_severity_heatmap(pairwise: pd.DataFrame) -> go.Figure:
         labels={"x": "Cheque", "y": "Par", "color": "Severidade"},
         aspect="auto",
     )
-    fig.update_xaxes(side="top")
-    return style_figure(fig, "Matriz de severidade da compatibilidade", height=360)
+    fig.update_xaxes(side="top", tickangle=-35, title_text="")
+    fig.update_traces(textfont={"size": 13})
+    fig = style_figure(fig, "Matriz de severidade da compatibilidade", height=580)
+    fig.update_layout(margin={"l": 195, "r": 50, "t": 215, "b": 65})
+    fig.update_coloraxes(colorbar={"tickfont": {"size": REPORT_FONT_PX}, "title": {"font": {"size": REPORT_FONT_PX}}})
+    return fig
 
 
 def dataset_correlation_heatmap(
@@ -106,17 +126,24 @@ def dataset_correlation_heatmap(
         labels={"x": "Feature", "y": "Feature", "color": "r"},
         aspect="auto",
     )
-    fig.update_xaxes(side="top")
-    return style_figure(
+    fig.update_xaxes(side="top", tickangle=-45, title_text="")
+    fig.update_traces(textfont={"size": 13})
+    fig = style_figure(
         fig,
         f"Heatmap de correlacao - {dataset_label} ({len(sample_df):,} linhas)",
-        height=max(420, 34 * len(corr.columns)),
+        height=max(680, 55 * len(corr.columns) + 260),
     )
+    fig.update_layout(margin={"l": 185, "r": 55, "t": 255, "b": 75})
+    fig.update_coloraxes(colorbar={"tickfont": {"size": REPORT_FONT_PX}, "title": {"font": {"size": REPORT_FONT_PX}}})
+    return fig
 
 
 def power_scatter(df: pd.DataFrame, y_col: str, sample_limit: int) -> go.Figure:
     needed = ["wind_speed_ms", y_col, "dataset_label", "entity"]
-    plot_df = df.dropna(subset=[col for col in needed if col in df.columns]).copy()
+    if any(col not in df.columns for col in needed):
+        return style_figure(go.Figure(), "Curva de potencia")
+    columns = list(dict.fromkeys(needed + [col for col in ["source_type", "timestamp", "yaw_error", "temperature_c"] if col in df.columns]))
+    plot_df = df.loc[:, columns].dropna(subset=[col for col in needed if col in df.columns])
     if plot_df.empty:
         return style_figure(go.Figure(), "Curva de potencia")
 
@@ -142,12 +169,14 @@ def power_scatter(df: pd.DataFrame, y_col: str, sample_limit: int) -> go.Figure:
     )
     fig.update_traces(marker={"size": 5})
     title = "Curva de potencia comparada"
-    return style_figure(fig, title, height=560)
+    return style_figure(fig, title, height=620)
 
 
 def empirical_power_curve(df: pd.DataFrame, y_col: str) -> go.Figure:
     required = ["wind_speed_ms", y_col, "dataset_label", "entity"]
-    curve_df = df.dropna(subset=[col for col in required if col in df.columns]).copy()
+    if any(col not in df.columns for col in required):
+        return style_figure(go.Figure(), "Curva empirica")
+    curve_df = df.loc[:, required].dropna(subset=required)
     if curve_df.empty:
         return style_figure(go.Figure(), "Curva empirica")
 
@@ -179,14 +208,14 @@ def empirical_power_curve(df: pd.DataFrame, y_col: str) -> go.Figure:
         },
     )
     fig.update_traces(line={"width": 2})
-    return style_figure(fig, "Curva empirica media por bin de vento", height=520)
+    return style_figure(fig, "Curva empirica media por bin de vento", height=580)
 
 
 def temporal_monthly_chart(df: pd.DataFrame, y_col: str) -> go.Figure:
-    if "timestamp" not in df.columns:
+    if any(col not in df.columns for col in ["timestamp", y_col, "dataset_label"]):
         return style_figure(go.Figure(), "Serie temporal mensal")
 
-    ts_df = df.dropna(subset=["timestamp", y_col]).copy()
+    ts_df = df.loc[:, ["timestamp", y_col, "dataset_label"]].dropna(subset=["timestamp", y_col])
     if ts_df.empty:
         return style_figure(go.Figure(), "Serie temporal mensal")
 
@@ -258,6 +287,8 @@ def entity_counts_bar(df: pd.DataFrame) -> go.Figure:
         labels={"entity": "Entidade", "rows": "Registros", "dataset_label": "Dataset"},
     )
     fig.update_layout(xaxis={"categoryorder": "total descending"})
-    fig = style_figure(fig, "Registros por entidade", height=420)
+    fig = style_figure(fig, "Registros por entidade", height=590)
+    fig.update_xaxes(tickangle=-60)
+    fig.update_layout(margin={"l": 85, "r": 40, "t": 130, "b": 185})
     fig.update_layout(legend_title_text="")
     return fig
